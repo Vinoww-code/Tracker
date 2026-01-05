@@ -17,18 +17,16 @@
 
     .container {
       display:flex;
-      align-items:flex-start;
-      background:#555;
+      background:#000000;
       border-radius:20px;
       overflow:hidden;
     }
 
     .activities {
-      width:200px;
-      background:#666;
+      width:220px;
+      background:#8a8a8a;
       padding:15px;
-      color:#fff;
-      min-height:100%;
+      color:#ffffff;
     }
 
     .activities h3 {
@@ -39,22 +37,37 @@
     }
 
     .activities ul { list-style:none; padding:0; margin:0; }
-    .activities li { margin:10px 0; }
+
+    .activities li {
+      margin:10px 0;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+    }
 
     .activities button {
-      background:#222; color:#fff; border:none; padding:5px 10px; cursor:pointer;
+      background:#222;
+      color:#fff;
+      border:none;
+      padding:5px 10px;
+      cursor:pointer;
+    }
+
+    .delete-btn {
+      background:#b00000;
+      padding:3px 8px;
+      font-size:12px;
     }
 
     .grid-wrapper {
       overflow-x:auto;
       padding:10px;
       flex:1;
-      display:flex;
-      align-items:flex-start;
     }
 
     table {
       border-collapse:collapse;
+      min-width:1200px;
       color:#fff;
     }
 
@@ -68,18 +81,16 @@
 
     input[type="checkbox"] { width:18px; height:18px; }
 
-    select {
-      padding:5px;
-    }
+    select { padding:5px; }
   </style>
 </head>
 <body>
 
-<h1>Hari / Tanggal dalam Sebulan</h1>
+<h1>Tracker Activity</h1>
 
 <div class="toolbar">
   <div>
-    Bulan: 
+    Bulan:
     <select id="monthSelect"></select>
     <select id="yearSelect"></select>
   </div>
@@ -87,7 +98,7 @@
 
 <div class="container">
   <div class="activities">
-    <h3>Kegiatan <button onclick="addActivity()">+</button></h3><small>Klik ✕ untuk hapus</small>
+    <h3>Kegiatan <button onclick="addActivity()">+</button></h3>
     <ul id="activityList"></ul>
   </div>
 
@@ -113,14 +124,16 @@ let activities = [];
 const now = new Date();
 monthNames.forEach((m,i)=>{
   const opt = document.createElement('option');
-  opt.value = i; opt.textContent = m;
+  opt.value = i;
+  opt.textContent = m;
   monthSelect.appendChild(opt);
 });
 monthSelect.value = now.getMonth();
 
 for(let y=2020; y<=2035; y++){
   const opt = document.createElement('option');
-  opt.value = y; opt.textContent = y;
+  opt.value = y;
+  opt.textContent = y;
   yearSelect.appendChild(opt);
 }
 yearSelect.value = now.getFullYear();
@@ -133,8 +146,7 @@ function storageKey(){
 }
 
 function saveData(){
-  const data = { activities };
-  localStorage.setItem(storageKey(), JSON.stringify(data));
+  localStorage.setItem(storageKey(), JSON.stringify({ activities }));
 }
 
 function loadData(){
@@ -153,7 +165,7 @@ function addActivity(){
 
 function removeActivity(index){
   if(!confirm('Hapus kegiatan ini?')) return;
-  activities.splice(index,1);
+  activities.splice(index, 1);
   saveData();
   render();
 }
@@ -164,32 +176,25 @@ function toggleCheck(aIndex, day){
 }
 
 function render(){
-  // render activity list
+  // Kegiatan
   activityList.innerHTML = '';
   activities.forEach((a,index)=>{
     const li = document.createElement('li');
-    li.style.display='flex';
-    li.style.justifyContent='space-between';
-    li.style.alignItems='center';
 
-    const span = document.createElement('span');
-    span.textContent = '• ' + a.name;
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = '• ' + a.name;
 
-    const del = document.createElement('button');
-    del.textContent = '✕';
-    del.style.background='#900';
-    del.style.border='none';
-    del.style.color='#fff';
-    del.style.cursor='pointer';
-    del.onclick = ()=> removeActivity(index);
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '✕';
+    delBtn.className = 'delete-btn';
+    delBtn.onclick = () => removeActivity(index);
 
-    li.appendChild(span);
-    li.appendChild(del);
+    li.appendChild(nameSpan);
+    li.appendChild(delBtn);
     activityList.appendChild(li);
   });
-  });
 
-  // render table
+  // Tabel
   table.innerHTML = '';
   const thead = document.createElement('tr');
   for(let d=1; d<=31; d++){
@@ -204,7 +209,7 @@ function render(){
     for(let d=0; d<31; d++){
       const td = document.createElement('td');
       const cb = document.createElement('input');
-      cb.type='checkbox';
+      cb.type = 'checkbox';
       cb.checked = a.checks[d];
       cb.onchange = ()=> toggleCheck(ai,d);
       td.appendChild(cb);
