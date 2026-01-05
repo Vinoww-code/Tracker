@@ -1,100 +1,179 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Monthly Activity Tracker</title>
-  <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background:#f5f5f5; padding:20px; }
-    h1 { text-align:center; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Activity Tracker</title>
 
-    .toolbar {
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      margin-bottom:15px;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
+}
 
-    .container {
-      display:flex;
-      background:#000000;
-      border-radius:20px;
-      overflow:hidden;
-    }
+body{
+  margin:0;
+  padding:15px;
+  background:#f2f2f2;
+}
 
-    .activities {
-      width:220px;
-      background:#8a8a8a;
-      padding:15px;
-      color:#ffffff;
-    }
+h1{
+  text-align:center;
+  margin-bottom:10px;
+}
 
-    .activities h3 {
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      margin-top:0;
-    }
+.toolbar{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:15px;
+  flex-wrap:wrap;
+}
 
-    .activities ul { list-style:none; padding:0; margin:0; }
+select{
+  padding:6px;
+  font-size:14px;
+}
 
-    .activities li {
-      margin:10px 0;
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-    }
+.container{
+  display:flex;
+  background:#000;
+  border-radius:15px;
+  overflow:hidden;
+  min-height:300px;
+}
 
-    .activities button {
-      background:#222;
-      color:#fff;
-      border:none;
-      padding:5px 10px;
-      cursor:pointer;
-    }
+/* ===== SIDEBAR ===== */
+.activities{
+  width:220px;
+  background:#777;
+  color:#fff;
+  padding:12px;
+}
 
-    .delete-btn {
-      background:#b00000;
-      padding:3px 8px;
-      font-size:12px;
-    }
+.activities h3{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:0;
+}
 
-    .grid-wrapper {
-      overflow-x:auto;
-      padding:10px;
-      flex:1;
-    }
+.activities button{
+  background:#111;
+  color:#fff;
+  border:none;
+  padding:5px 10px;
+  cursor:pointer;
+}
 
-    table {
-      border-collapse:collapse;
-      min-width:1200px;
-      color:#fff;
-    }
+.activities ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
 
-    th, td {
-      border:1px solid #aaa;
-      text-align:center;
-      padding:5px;
-    }
+.activities li{
+  background:#666;
+  margin-bottom:10px;
+  padding:8px;
+  border-radius:8px;
+}
 
-    th { background:#777; position:sticky; top:0; }
+.delete-btn{
+  background:#b00000;
+  border:none;
+  color:#fff;
+  padding:2px 6px;
+  font-size:12px;
+  cursor:pointer;
+  float:right;
+}
 
-    input[type="checkbox"] { width:18px; height:18px; }
+/* ===== PROGRESS ===== */
+.progress{
+  height:6px;
+  background:#333;
+  border-radius:4px;
+  overflow:hidden;
+  margin-top:5px;
+}
 
-    select { padding:5px; }
-  </style>
+.progress-bar{
+  height:100%;
+  width:0%;
+  transition:width .3s;
+}
+
+/* ===== GRID ===== */
+.grid-wrapper{
+  flex:1;
+  overflow-x:auto;
+  padding:10px;
+}
+
+table{
+  border-collapse:collapse;
+  min-width:900px;
+  color:#fff;
+}
+
+th,td{
+  border:1px solid #aaa;
+  text-align:center;
+  padding:6px;
+}
+
+th{
+  background:#666;
+  position:sticky;
+  top:0;
+}
+
+input[type="checkbox"]{
+  width:20px;
+  height:20px;
+}
+
+/* ===== ROW COLOR (PSIKOLOGI) ===== */
+.low{ background:#444; }
+.mid{ background:#c9a400; }
+.good{ background:#2f8f2f; }
+.full{ background:#0f5f0f; }
+
+/* ===== SUMMARY ===== */
+#summary{
+  background:#fff;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .container{
+    flex-direction:column;
+  }
+  .activities{
+    width:100%;
+  }
+  table{
+    min-width:700px;
+  }
+}
+</style>
 </head>
+
 <body>
 
-<h1>Tracker Activity</h1>
+<h1>Activity Tracker</h1>
 
 <div class="toolbar">
-  <div>
-    Bulan:
-    <select id="monthSelect"></select>
-    <select id="yearSelect"></select>
-  </div>
+  <select id="monthSelect"></select>
+  <select id="yearSelect"></select>
 </div>
+
+<div id="summary"></div>
 
 <div class="container">
   <div class="activities">
@@ -108,119 +187,89 @@
 </div>
 
 <script>
-const monthNames = [
-  'Januari','Februari','Maret','April','Mei','Juni',
-  'Juli','Agustus','September','Oktober','November','Desember'
-];
-
+const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 const monthSelect = document.getElementById('monthSelect');
 const yearSelect = document.getElementById('yearSelect');
 const table = document.getElementById('trackerTable');
 const activityList = document.getElementById('activityList');
+const summaryBox = document.getElementById('summary');
 
 let activities = [];
 
-// Init month & year
+/* ===== INIT ===== */
 const now = new Date();
 monthNames.forEach((m,i)=>{
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = m;
-  monthSelect.appendChild(opt);
+  const o=document.createElement('option');
+  o.value=i; o.textContent=m;
+  monthSelect.appendChild(o);
 });
-monthSelect.value = now.getMonth();
+monthSelect.value=now.getMonth();
 
-for(let y=2020; y<=2035; y++){
-  const opt = document.createElement('option');
-  opt.value = y;
-  opt.textContent = y;
-  yearSelect.appendChild(opt);
+for(let y=2023;y<=2035;y++){
+  const o=document.createElement('option');
+  o.value=y; o.textContent=y;
+  yearSelect.appendChild(o);
 }
-yearSelect.value = now.getFullYear();
+yearSelect.value=now.getFullYear();
 
-monthSelect.onchange = loadData;
-yearSelect.onchange = loadData;
+monthSelect.onchange=loadData;
+yearSelect.onchange=loadData;
 
 function storageKey(){
   return `tracker-${yearSelect.value}-${monthSelect.value}`;
 }
 
+/* ===== STORAGE ===== */
 function saveData(){
-  localStorage.setItem(storageKey(), JSON.stringify({ activities }));
+  localStorage.setItem(storageKey(),JSON.stringify(activities));
 }
-
 function loadData(){
-  const saved = localStorage.getItem(storageKey());
-  activities = saved ? JSON.parse(saved).activities : [];
+  const data=localStorage.getItem(storageKey());
+  activities=data?JSON.parse(data):[];
   render();
 }
 
+/* ===== CRUD ===== */
 function addActivity(){
-  const name = prompt('Nama kegiatan:');
+  const name=prompt("Nama kegiatan:");
   if(!name) return;
-  activities.push({ name, checks: Array(31).fill(false) });
+  activities.push({name,checks:Array(31).fill(false)});
   saveData();
   render();
 }
-
-function removeActivity(index){
-  if(!confirm('Hapus kegiatan ini?')) return;
-  activities.splice(index, 1);
+function removeActivity(i){
+  if(!confirm("Hapus kegiatan?")) return;
+  activities.splice(i,1);
   saveData();
   render();
 }
-
-function toggleCheck(aIndex, day){
-  activities[aIndex].checks[day] = !activities[aIndex].checks[day];
+function toggleCheck(ai,day){
+  activities[ai].checks[day]=!activities[ai].checks[day];
   saveData();
 }
 
-function render(){
-  // Kegiatan
-  activityList.innerHTML = '';
-  activities.forEach((a,index)=>{
-    const li = document.createElement('li');
-
-    const nameSpan = document.createElement('span');
-    nameSpan.textContent = '• ' + a.name;
-
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '✕';
-    delBtn.className = 'delete-btn';
-    delBtn.onclick = () => removeActivity(index);
-
-    li.appendChild(nameSpan);
-    li.appendChild(delBtn);
-    activityList.appendChild(li);
-  });
-
-  // Tabel
-  table.innerHTML = '';
-  const thead = document.createElement('tr');
-  for(let d=1; d<=31; d++){
-    const th = document.createElement('th');
-    th.textContent = d;
-    thead.appendChild(th);
+/* ===== EVALUATION ===== */
+function evaluate(){
+  if(!activities.length){
+    summaryBox.innerHTML="Belum ada data.";
+    return;
   }
-  table.appendChild(thead);
 
-  activities.forEach((a,ai)=>{
-    const tr = document.createElement('tr');
-    for(let d=0; d<31; d++){
-      const td = document.createElement('td');
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = a.checks[d];
-      cb.onchange = ()=> toggleCheck(ai,d);
-      td.appendChild(cb);
-      tr.appendChild(td);
+  let best=null, bestScore=-1;
+  let dayStat=Array(31).fill(0);
+
+  activities.forEach(a=>{
+    const done=a.checks.filter(v=>v).length;
+    if(done>bestScore){
+      bestScore=done;
+      best=a.name;
     }
-    table.appendChild(tr);
+    a.checks.forEach((v,i)=>{ if(v) dayStat[i]++; });
   });
-}
 
-loadData();
-</script>
+  const worstDay=dayStat.indexOf(Math.min(...dayStat))+1;
+  const productiveDays=dayStat.filter(v=>v>0).length;
 
-</body>
-</html>
+  summaryBox.innerHTML=`
+  <b>Evaluasi Bulanan</b><br>
+  🔹 Paling konsisten: <b>${b
