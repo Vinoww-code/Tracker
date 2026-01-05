@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Activity Tracker</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background:#f5f5f5; padding:20px; }
+    h1 { text-align:center; }
+
+    .toolbar {
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      margin-bottom:15px;
+    }
+
+    .container {
+      display:flex;
+      background:#000000;
+      border-radius:20px;
+      overflow:hidden;
+    }
+
+    .activities {
+      width:200px;
+      background:#8a8a8a;
+      padding:15px;
+      color:#ffffff;
+    }
+
+    .activities h3 {
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      margin-top:0;
+    }
+
+    .activities ul { list-style:none; padding:0; margin:0; }
+    .activities li { margin:10px 0; }
+
+    .activities button {
+      background:#222; color:#fff; border:none; padding:5px 10px; cursor:pointer;
+    }
+
+    .grid-wrapper {
+      overflow-x:auto;
+      padding:10px;
+      flex:1;
+    }
+    
+
+    table {
+      border-collapse:collapse;
+      min-width:1200px;
+      color:#fff;
+    }
+
+    th, td {
+      border:1px solid #aaa;
+      text-align:center;
+      padding:5px;
+    }
+
+    th { background:#777; position:sticky; top:0; }
+
+    input[type="checkbox"] { width:18px; height:18px; }
+
+    select {
+      padding:5px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Tracker Activity</h1>
+
+<div class="toolbar">
+  <div>
+    Bulan: 
+    <select id="monthSelect"></select>
+    <select id="yearSelect"></select>
+  </div>
+</div>
+
+<div class="container">
+  <div class="activities">
+    <h3>Kegiatan <button onclick="addActivity()">+</button></h3>
+    <ul id="activityList"></ul>
+  </div>
+
+  <div class="grid-wrapper">
+    <table id="trackerTable"></table>
+  </div>
+</div>
+
+<script>
+const monthNames = [
+  'Januari','Februari','Maret','April','Mei','Juni',
+  'Juli','Agustus','September','Oktober','November','Desember'
+];
+
+const monthSelect = document.getElementById('monthSelect');
+const yearSelect = document.getElementById('yearSelect');
+const table = document.getElementById('trackerTable');
+const activityList = document.getElementById('activityList');
+
+let activities = [];
+
+// Init month & year
+const now = new Date();
+monthNames.forEach((m,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = m;
+  monthSelect.appendChild(opt);
+});
+monthSelect.value = now.getMonth();
+
+for(let y=2020; y<=2035; y++){
+  const opt = document.createElement('option');
+  opt.value = y; opt.textContent = y;
+  yearSelect.appendChild(opt);
+}
+yearSelect.value = now.getFullYear();
+
+monthSelect.onchange = loadData;
+yearSelect.onchange = loadData;
+
+function storageKey(){
+  return `tracker-${yearSelect.value}-${monthSelect.value}`;
+}
+
+function saveData(){
+  const data = { activities };
+  localStorage.setItem(storageKey(), JSON.stringify(data));
+}
+
+function loadData(){
+  const saved = localStorage.getItem(storageKey());
+  activities = saved ? JSON.parse(saved).activities : [];
+  render();
+}
+
+function addActivity(){
+  const name = prompt('Nama kegiatan:');
+  if(!name) return;
+  activities.push({ name, checks: Array(31).fill(false) });
+  saveData();
+  render();
+}
+
+function toggleCheck(aIndex, day){
+  activities[aIndex].checks[day] = !activities[aIndex].checks[day];
+  saveData();
+}
+
+function render(){
+  // render activity list
+  activityList.innerHTML = '';
+  activities.forEach(a=>{
+    const li = document.createElement('li');
+    li.textContent = '• ' + a.name;
+    activityList.appendChild(li);
+  });
+
+  // render table
+  table.innerHTML = '';
+  const thead = document.createElement('tr');
+  for(let d=1; d<=31; d++){
+    const th = document.createElement('th');
+    th.textContent = d;
+    thead.appendChild(th);
+  }
+  table.appendChild(thead);
+
+  activities.forEach((a,ai)=>{
+    const tr = document.createElement('tr');
+    for(let d=0; d<31; d++){
+      const td = document.createElement('td');
+      const cb = document.createElement('input');
+      cb.type='checkbox';
+      cb.checked = a.checks[d];
+      cb.onchange = ()=> toggleCheck(ai,d);
+      td.appendChild(cb);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  });
+}
+
+loadData();
+</script>
+
+</body>
+</html>
