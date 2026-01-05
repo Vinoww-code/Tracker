@@ -272,4 +272,74 @@ function evaluate(){
 
   summaryBox.innerHTML=`
   <b>Evaluasi Bulanan</b><br>
-  🔹 Paling konsisten: <b>${b
+  🔹 Paling konsisten: <b>${best}</b><br>
+  🔹 Hari paling bolong: <b>Tanggal ${worstDay}</b><br>
+  🔹 Hari produktif: <b>${productiveDays}</b>
+  `;
+}
+
+/* ===== RENDER ===== */
+function render(){
+  activityList.innerHTML="";
+  table.innerHTML="";
+
+  const head=document.createElement('tr');
+  for(let d=1;d<=31;d++){
+    const th=document.createElement('th');
+    th.textContent=d;
+    head.appendChild(th);
+  }
+  table.appendChild(head);
+
+  activities.forEach((a,ai)=>{
+    const li=document.createElement('li');
+
+    const done=a.checks.filter(v=>v).length;
+    const percent=Math.round(done/31*100);
+
+    const title=document.createElement('div');
+    title.innerHTML=`${a.name}
+    <button class="delete-btn" onclick="removeActivity(${ai})">✕</button>`;
+
+    const info=document.createElement('div');
+    info.style.fontSize="12px";
+    info.textContent=`${done}/31 hari (${percent}%)`;
+
+    const prog=document.createElement('div');
+    prog.className="progress";
+
+    const bar=document.createElement('div');
+    bar.className="progress-bar";
+    bar.style.width=percent+"%";
+    bar.style.background=percent<50?"#c9a400":percent<100?"#2f8f2f":"#0f5f0f";
+
+    prog.appendChild(bar);
+    li.appendChild(title);
+    li.appendChild(info);
+    li.appendChild(prog);
+    activityList.appendChild(li);
+
+    const tr=document.createElement('tr');
+    tr.className=percent===0?'low':percent<50?'mid':percent<100?'good':'full';
+
+    for(let d=0;d<31;d++){
+      const td=document.createElement('td');
+      const cb=document.createElement('input');
+      cb.type="checkbox";
+      cb.checked=a.checks[d];
+      cb.onchange=()=>toggleCheck(ai,d);
+      td.appendChild(cb);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  });
+
+  evaluate();
+}
+
+loadData();
+</script>
+
+</body>
+</html>
+
