@@ -17,16 +17,18 @@
 
     .container {
       display:flex;
-      background:#000000;
+      align-items:flex-start;
+      background:#555;
       border-radius:20px;
       overflow:hidden;
     }
 
     .activities {
       width:200px;
-      background:#8a8a8a;
+      background:#666;
       padding:15px;
-      color:#ffffff;
+      color:#fff;
+      min-height:100%;
     }
 
     .activities h3 {
@@ -47,12 +49,12 @@
       overflow-x:auto;
       padding:10px;
       flex:1;
+      display:flex;
+      align-items:flex-start;
     }
-    
 
     table {
       border-collapse:collapse;
-      min-width:1200px;
       color:#fff;
     }
 
@@ -73,7 +75,7 @@
 </head>
 <body>
 
-<h1>Tracker Activity</h1>
+<h1>Hari / Tanggal dalam Sebulan</h1>
 
 <div class="toolbar">
   <div>
@@ -85,7 +87,7 @@
 
 <div class="container">
   <div class="activities">
-    <h3>Kegiatan <button onclick="addActivity()">+</button></h3>
+    <h3>Kegiatan <button onclick="addActivity()">+</button></h3><small>Klik ✕ untuk hapus</small>
     <ul id="activityList"></ul>
   </div>
 
@@ -149,6 +151,13 @@ function addActivity(){
   render();
 }
 
+function removeActivity(index){
+  if(!confirm('Hapus kegiatan ini?')) return;
+  activities.splice(index,1);
+  saveData();
+  render();
+}
+
 function toggleCheck(aIndex, day){
   activities[aIndex].checks[day] = !activities[aIndex].checks[day];
   saveData();
@@ -157,10 +166,27 @@ function toggleCheck(aIndex, day){
 function render(){
   // render activity list
   activityList.innerHTML = '';
-  activities.forEach(a=>{
+  activities.forEach((a,index)=>{
     const li = document.createElement('li');
-    li.textContent = '• ' + a.name;
+    li.style.display='flex';
+    li.style.justifyContent='space-between';
+    li.style.alignItems='center';
+
+    const span = document.createElement('span');
+    span.textContent = '• ' + a.name;
+
+    const del = document.createElement('button');
+    del.textContent = '✕';
+    del.style.background='#900';
+    del.style.border='none';
+    del.style.color='#fff';
+    del.style.cursor='pointer';
+    del.onclick = ()=> removeActivity(index);
+
+    li.appendChild(span);
+    li.appendChild(del);
     activityList.appendChild(li);
+  });
   });
 
   // render table
