@@ -6,21 +6,9 @@
 <title>Monthly Activity Tracker</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family:Arial, Helvetica, sans-serif;
-}
-
-body{
-  margin:0;
-  padding:15px;
-  background:#f2f2f2;
-}
-
-h1{
-  text-align:center;
-  margin-bottom:10px;
-}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f4f4f4;margin:0;padding:15px}
+h1{text-align:center;margin-bottom:10px}
 
 .toolbar{
   display:flex;
@@ -30,40 +18,26 @@ h1{
   flex-wrap:wrap;
 }
 
-select{
-  padding:6px;
-  font-size:14px;
-}
+select{padding:6px}
 
 .container{
   display:flex;
   background:#000;
-  border-radius:15px;
+  border-radius:16px;
   overflow:hidden;
-  min-height:300px;
 }
 
-/* ===== SIDEBAR ===== */
 .activities{
-  width:220px;
-  background:#777;
-  color:#fff;
+  width:260px;
+  background:#8a8a8a;
   padding:12px;
+  color:#fff;
 }
 
 .activities h3{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   margin-top:0;
-}
-
-.activities button{
-  background:#111;
-  color:#fff;
-  border:none;
-  padding:5px 10px;
-  cursor:pointer;
 }
 
 .activities ul{
@@ -73,93 +47,82 @@ select{
 }
 
 .activities li{
+  margin-bottom:12px;
   background:#666;
-  margin-bottom:10px;
   padding:8px;
   border-radius:8px;
 }
 
-.delete-btn{
-  background:#b00000;
-  border:none;
+.activities button{
+  background:#222;
   color:#fff;
-  padding:2px 6px;
-  font-size:12px;
+  border:none;
+  padding:4px 8px;
   cursor:pointer;
-  float:right;
 }
 
-/* ===== PROGRESS ===== */
+.delete-btn{
+  background:#a00000;
+  margin-left:6px;
+}
+
 .progress{
   height:6px;
   background:#333;
   border-radius:4px;
   overflow:hidden;
-  margin-top:5px;
+  margin-top:4px;
 }
 
 .progress-bar{
   height:100%;
-  width:0%;
   transition:width .3s;
 }
 
-/* ===== GRID ===== */
 .grid-wrapper{
-  flex:1;
   overflow-x:auto;
+  flex:1;
   padding:10px;
 }
 
 table{
   border-collapse:collapse;
-  min-width:900px;
+  min-width:1200px;
   color:#fff;
 }
 
 th,td{
-  border:1px solid #aaa;
+  border:1px solid #999;
+  padding:4px;
   text-align:center;
-  padding:6px;
 }
 
 th{
-  background:#666;
+  background:#777;
   position:sticky;
   top:0;
 }
 
 input[type="checkbox"]{
-  width:20px;
-  height:20px;
+  width:18px;
+  height:18px;
 }
 
-/* ===== ROW COLOR (PSIKOLOGI) ===== */
-.low{ background:#444; }
-.mid{ background:#c9a400; }
-.good{ background:#2f8f2f; }
-.full{ background:#0f5f0f; }
+/* highlight rows */
+.low{background:#555}
+.mid{background:#c9a400}
+.good{background:#2f8f2f}
+.full{background:#0f5f0f}
 
-/* ===== SUMMARY ===== */
 #summary{
-  background:#fff;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
-  font-size:14px;
+  margin:12px 0;
+  font-weight:bold;
 }
 
-/* ===== RESPONSIVE ===== */
+/* responsive */
 @media(max-width:768px){
-  .container{
-    flex-direction:column;
-  }
-  .activities{
-    width:100%;
-  }
-  table{
-    min-width:700px;
-  }
+  .container{flex-direction:column}
+  .activities{width:100%}
 }
 </style>
 </head>
@@ -177,7 +140,7 @@ input[type="checkbox"]{
 
 <div class="container">
   <div class="activities">
-    <h3>Kegiatan <button onclick="addActivity()">+</button></h3>
+    <h3>Kegiatan <button id="addBtn">+</button></h3>
     <ul id="activityList"></ul>
   </div>
 
@@ -187,76 +150,82 @@ input[type="checkbox"]{
 </div>
 
 <script>
-const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-const monthSelect = document.getElementById('monthSelect');
-const yearSelect = document.getElementById('yearSelect');
-const table = document.getElementById('trackerTable');
-const activityList = document.getElementById('activityList');
-const summaryBox = document.getElementById('summary');
+/* ===== DATA & INIT ===== */
+const monthNames=[
+'Januari','Februari','Maret','April','Mei','Juni',
+'Juli','Agustus','September','Oktober','November','Desember'
+];
 
-let activities = [];
+const monthSelect=document.getElementById('monthSelect');
+const yearSelect=document.getElementById('yearSelect');
+const table=document.getElementById('trackerTable');
+const activityList=document.getElementById('activityList');
+const summary=document.getElementById('summary');
 
-/* ===== INIT ===== */
-const now = new Date();
+let activities=[];
+
+const now=new Date();
 monthNames.forEach((m,i)=>{
   const o=document.createElement('option');
-  o.value=i; o.textContent=m;
+  o.value=i;o.textContent=m;
   monthSelect.appendChild(o);
 });
 monthSelect.value=now.getMonth();
 
-for(let y=2023;y<=2035;y++){
+for(let y=2020;y<=2035;y++){
   const o=document.createElement('option');
-  o.value=y; o.textContent=y;
+  o.value=y;o.textContent=y;
   yearSelect.appendChild(o);
 }
 yearSelect.value=now.getFullYear();
 
 monthSelect.onchange=loadData;
 yearSelect.onchange=loadData;
+document.getElementById('addBtn').onclick=addActivity;
 
+/* ===== STORAGE ===== */
 function storageKey(){
   return `tracker-${yearSelect.value}-${monthSelect.value}`;
 }
 
-/* ===== STORAGE ===== */
 function saveData(){
-  localStorage.setItem(storageKey(),JSON.stringify(activities));
+  localStorage.setItem(storageKey(),JSON.stringify({activities}));
 }
+
 function loadData(){
-  const data=localStorage.getItem(storageKey());
-  activities=data?JSON.parse(data):[];
+  const saved=localStorage.getItem(storageKey());
+  activities=saved?JSON.parse(saved).activities:[];
   render();
 }
 
-/* ===== CRUD ===== */
+/* ===== ACTIONS ===== */
 function addActivity(){
-  const name=prompt("Nama kegiatan:");
-  if(!name) return;
+  const name=prompt('Nama kegiatan:');
+  if(!name)return;
   activities.push({name,checks:Array(31).fill(false)});
-  saveData();
-  render();
+  saveData();render();
 }
+
 function removeActivity(i){
-  if(!confirm("Hapus kegiatan?")) return;
+  if(!confirm('Hapus kegiatan ini?'))return;
   activities.splice(i,1);
-  saveData();
-  render();
+  saveData();render();
 }
+
 function toggleCheck(ai,day){
   activities[ai].checks[day]=!activities[ai].checks[day];
-  saveData();
+  saveData();render();
 }
 
 /* ===== EVALUATION ===== */
 function evaluate(){
-  if(!activities.length){
-    summaryBox.innerHTML="Belum ada data.";
+  if(activities.length===0){
+    summary.textContent='';
     return;
   }
 
-  let best=null, bestScore=-1;
-  let dayStat=Array(31).fill(0);
+  let best='', bestScore=-1;
+  let dayStats=Array(31).fill(0);
 
   activities.forEach(a=>{
     const done=a.checks.filter(v=>v).length;
@@ -264,25 +233,25 @@ function evaluate(){
       bestScore=done;
       best=a.name;
     }
-    a.checks.forEach((v,i)=>{ if(v) dayStat[i]++; });
+    a.checks.forEach((v,i)=>{ if(v) dayStats[i]++; });
   });
 
-  const worstDay=dayStat.indexOf(Math.min(...dayStat))+1;
-  const productiveDays=dayStat.filter(v=>v>0).length;
+  const nonProductive = dayStats.filter(v => v === 0).length;
+  const productive = dayStats.filter(v => v > 0).length;
 
-  summaryBox.innerHTML=`
-  <b>Evaluasi Bulanan</b><br>
-  🔹 Paling konsisten: <b>${best}</b><br>
-  🔹 Hari paling bolong: <b>Tanggal ${worstDay}</b><br>
-  🔹 Hari produktif: <b>${productiveDays}</b>
-  `;
+  summary.innerHTML =
+  `🔹 Paling konsisten: <b>${best}</b><br>
+   🔹 Hari tidak produktif: <b>${nonProductive}</b><br>
+   🔹 Hari produktif: <b>${productive}</b>`;
+
 }
 
 /* ===== RENDER ===== */
 function render(){
-  activityList.innerHTML="";
-  table.innerHTML="";
+  activityList.innerHTML='';
+  table.innerHTML='';
 
+  /* header */
   const head=document.createElement('tr');
   for(let d=1;d<=31;d++){
     const th=document.createElement('th');
@@ -292,40 +261,55 @@ function render(){
   table.appendChild(head);
 
   activities.forEach((a,ai)=>{
-    const li=document.createElement('li');
-
     const done=a.checks.filter(v=>v).length;
     const percent=Math.round(done/31*100);
 
+    /* sidebar */
+    const li=document.createElement('li');
+
     const title=document.createElement('div');
-    title.innerHTML=`${a.name}
-    <button class="delete-btn" onclick="removeActivity(${ai})">✕</button>`;
+    title.textContent=a.name;
+
+    const del=document.createElement('button');
+    del.textContent='✕';
+    del.className='delete-btn';
+    del.onclick=()=>removeActivity(ai);
+
+    title.appendChild(del);
 
     const info=document.createElement('div');
-    info.style.fontSize="12px";
+    info.style.fontSize='12px';
     info.textContent=`${done}/31 hari (${percent}%)`;
 
     const prog=document.createElement('div');
-    prog.className="progress";
+    prog.className='progress';
 
     const bar=document.createElement('div');
-    bar.className="progress-bar";
-    bar.style.width=percent+"%";
-    bar.style.background=percent<50?"#c9a400":percent<100?"#2f8f2f":"#0f5f0f";
+    bar.className='progress-bar';
+    bar.style.width=percent+'%';
+    bar.style.background=
+      percent===0?'#555':
+      percent<50?'#c9a400':
+      percent<100?'#2f8f2f':'#0f5f0f';
 
     prog.appendChild(bar);
+
     li.appendChild(title);
     li.appendChild(info);
     li.appendChild(prog);
     activityList.appendChild(li);
 
+    /* table row */
     const tr=document.createElement('tr');
-    tr.className=percent===0?'low':percent<50?'mid':percent<100?'good':'full';
+    tr.className=
+      percent===0?'low':
+      percent<50?'mid':
+      percent<100?'good':'full';
 
     for(let d=0;d<31;d++){
       const td=document.createElement('td');
       const cb=document.createElement('input');
-      cb.type="checkbox";
+      cb.type='checkbox';
       cb.checked=a.checks[d];
       cb.onchange=()=>toggleCheck(ai,d);
       td.appendChild(cb);
@@ -342,4 +326,3 @@ loadData();
 
 </body>
 </html>
-
