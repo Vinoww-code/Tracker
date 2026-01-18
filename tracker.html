@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Modern Activity Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #dbd7d7;
+            --card-bg: #ffffff;
+            --text-main: #000000;
+            --accent: #000000;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --border: #000000;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --accent: #ffffff;
+            --border: #333333;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        body { 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: 0.3s;
+            min-height: 100vh;
+        }
+
+        /* Navigasi */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 900px;
+            margin: 10px 0 20px 0;
+        }
+        
+        h1 { font-size: 1.4rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 900px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        select, .btn-action {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        /* Dashboard & Stats */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container { height: 160px; width: 100%; }
+
+        /* Heatmap Grid Rapih */
+        .heatmap-wrapper {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 10px;
+            max-width: 150px;
+        }
+        
+        .heat-box { 
+            aspect-ratio: 1/1;
+            border-radius: 2px; 
+            background: rgba(128, 128, 128, 0.1); 
+            border: 0.5px solid var(--border);
+        }
+
+        #summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+        }
+
+        #summary .stat-card { padding: 10px; text-align: center; }
+        #summary small { font-size: 0.7rem; opacity: 0.7; margin-bottom: 4px; }
+        #summary span { font-size: 0.9rem; font-weight: bold; word-break: break-word; }
+
+        /* Tabel Tracker */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .activities-header {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .grid-wrapper { 
+            overflow-x: auto; 
+            width: 100%; 
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        table { border-collapse: collapse; width: 100%; }
+
+        th { 
+            background: var(--bg-color); 
+            padding: 10px 5px; 
+            font-size: 0.75rem; 
+            position: sticky; 
+            top: 0; 
+            z-index: 20;
+            border: 0.5px solid var(--border);
+        }
+
+        .activity-name-cell {
+            position: sticky;
+            left: 0;
+            background: var(--card-bg);
+            padding: 12px;
+            min-width: 140px;
+            z-index: 30;
+            border-right: 2px solid var(--border);
+        }
+
+        /* Sembunyikan Checkbox Asli */
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 6px; /* Ubah ke 50% jika ingin bulat */
+            cursor: pointer;
+            display: inline-grid;
+            place-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        /* Efek Saat Dicentang */
+        input[type="checkbox"]:checked {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        /* Membuat Logo Ceklis Custom */
+        input[type="checkbox"]::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            transform: scale(0);
+            transition: 0.1s transform ease-in-out;
+            /* Membuat bentuk ceklis menggunakan clip-path */
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            background-color: rgb(0, 0, 0);
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+
+        /* Efek Hover Agar Terasa Interaktif */
+        input[type="checkbox"]:hover {
+            border-color: var(--success);
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+            @keyframes check-bounce {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        input[type="checkbox"]:checked::before {
+            animation: check-bounce 0.2s ease-in-out;
+        }
+
+
+        .mini-progress { height: 6px; background: rgba(128,128,128,0.1); border-radius: 3px; margin-top: 6px; }
+        .mini-progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+        /* Responsive HP */
+        @media (max-width: 600px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            #summary { grid-template-columns: 1fr 1fr; }
+            #summary .stat-card:last-child { grid-column: span 2; }
+            h1 { font-size: 1.2rem; }
+            .activity-name-cell { min-width: 120px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <a href="index.html" class="back-link" style="color:var(--text-main)">←</a>
+        <h1>MONO TRACKER</h1>
+        <button class="btn-action" onclick="toggleTheme()">🌓</button>
+    </div>
+
+    <div class="toolbar">
+        <select id="monthSelect"></select>
+        <select id="yearSelect"></select>
+        <button class="btn-action" onclick="exportData()">📤 Export</button>
+        <button class="btn-action" onclick="document.getElementById('fileInput').click()">📥 Import</button>
+        <input type="file" id="fileInput" hidden onchange="importData(event)">
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <small style="margin-bottom:10px; font-weight:bold; text-transform:uppercase;">Trend Mingguan</small>
+            <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
+        </div>
+        <div class="stat-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <small style="font-weight:bold; text-transform:uppercase;">Activity Map</small>
+                <span id="streakDisplay" style="font-size:0.8rem">🔥 0</span>
+            </div>
+            <div id="heatmap" class="heatmap-wrapper"></div>
+        </div>
+    </div>
+
+    <div id="summary"></div>
+
+    <div class="container">
+        <div class="activities-header">
+            <span style="font-weight:bold; font-size:0.9rem">DAFTAR KEGIATAN</span>
+            <button id="addBtn" style="background:var(--accent); color:var(--bg-color); border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:0.8rem">+ TAMBAH</button>
+        </div>
+        <div class="grid-wrapper">
+            <table id="trackerTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    const monthNames=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const monthSelect=document.getElementById('monthSelect');
+    const yearSelect=document.getElementById('yearSelect');
+    const tableHead=document.getElementById('tableHead');
+    const tableBody=document.getElementById('tableBody');
+    const summary=document.getElementById('summary');
+    let activities=[];
+    let myChart = null;
+
+    const now = new Date();
+    monthNames.forEach((m,i)=>{
+        const o=document.createElement('option');
+        o.value=i; o.textContent=m;
+        monthSelect.appendChild(o);
+    });
+    monthSelect.value=now.getMonth();
+
+    for(let y=2024; y<=2030; y++){
+        const o=document.createElement('option');
+        o.value=y; o.textContent=y;
+        yearSelect.appendChild(o);
+    }
+    yearSelect.value=now.getFullYear();
+
+    monthSelect.onchange=loadData;
+    yearSelect.onchange=loadData;
+    document.getElementById('addBtn').onclick=addActivity;
+
+    function getDaysInMonth(month, year) { return new Date(year, parseInt(month) + 1, 0).getDate(); }
+    function storageKey() { return `tracker-${yearSelect.value}-${monthSelect.value}`; }
+
+    function saveData(){
+        localStorage.setItem(storageKey(), JSON.stringify({activities}));
+        updateVisuals();
+    }
+
+    function loadData(){
+        const saved=localStorage.getItem(storageKey());
+        activities=saved ? JSON.parse(saved).activities : [];
+        render();
+    }
+
+    function addActivity(){
+        const name=prompt('Nama kegiatan:');
+        if(!name) return;
+        const days = getDaysInMonth(monthSelect.value, yearSelect.value);
+        activities.push({name, checks: Array(days).fill(false)});
+        saveData(); render();
+    }
+
+    function editActivityName(i) {
+        const newName = prompt('Ubah nama kegiatan:', activities[i].name);
+        if (newName) { activities[i].name = newName; saveData(); render(); }
+    }
+
+    function removeActivity(i){
+        if(confirm(`Hapus "${activities[i].name}"?`)){ activities.splice(i,1); saveData(); render(); }
+    }
+
+    function toggleCheck(ai, day){
+        activities[ai].checks[day] = !activities[ai].checks[day];
+        saveData(); render();
+    }
+
+    function updateVisuals() {
+        const daysInMonth = getDaysInMonth(monthSelect.value, yearSelect.value);
+        let dailyCounts = Array(daysInMonth).fill(0);
+        activities.forEach(a => a.checks.forEach((c, i) => { if(c) dailyCounts[i]++; }));
+
+        // Heatmap Update
+        const heatmap = document.getElementById('heatmap');
+        heatmap.innerHTML = '';
+        dailyCounts.forEach(count => {
+            const box = document.createElement('div');
+            box.className = 'heat-box';
+            if(count > 0) {
+                const alpha = 0.2 + (Math.min(count / (activities.length || 1), 1) * 0.8);
+                box.style.backgroundColor = `rgba(34, 197, 94, ${alpha})`;
+            }
+            heatmap.appendChild(box);
+        });
+
+        // Chart Update
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        const last7 = dailyCounts.slice(-7);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['H-6','H-5','H-4','H-3','H-2','H-1','Hari Ini'],
+                datasets: [{
+                    data: last7,
+                    backgroundColor: isDark ? '#ffffff' : '#000000',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { display: false }, ticks: { color: isDark?'#aaa':'#666', stepSize: 1 } },
+                    x: { grid: { display: false }, ticks: { color: isDark?'#aaa':'#666' } }
+                }
+            }
+        });
+
+        let streak = 0;
+        for(let i = dailyCounts.length - 1; i >= 0; i--) {
+            if(dailyCounts[i] > 0) streak++; else if(i < dailyCounts.length - 1) break;
+        }
+        document.getElementById('streakDisplay').innerText = `🔥 ${streak} Hari`;
+    }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify({activities})], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `MONO-${monthNames[monthSelect.value]}.json`;
+        a.click();
+    }
+
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            activities = JSON.parse(event.target.result).activities;
+            saveData(); render();
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateVisuals();
+    }
+    if(localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+    function evaluate(){
+        if(activities.length===0){
+            summary.innerHTML='<div class="stat-card" style="grid-column: span 3">Belum ada kegiatan.</div>';
+            return;
+        }
+        const days = getDaysInMonth(monthSelect.value, yearSelect.value);
+        let best='', max=-1, totalDone=0;
+        let dayStats=Array(days).fill(0);
+        
+        activities.forEach(a => {
+            const d = a.checks.filter(v=>v).length;
+            if(d > max){ max=d; best=a.name; }
+            totalDone += d;
+            a.checks.forEach((v,i) => { if(v) dayStats[i]++; });
+        });
+
+        const productive = dayStats.filter(v => v > 0).length;
+        const perfect = dayStats.filter(v => v === activities.length).length;
+
+        summary.innerHTML = `
+            <div class="stat-card"><small>TERGOKIL</small><span>${best}</span></div>
+            <div class="stat-card"><small>PRODUKTIF</small><span>${productive} Hari</span></div>
+            <div class="stat-card"><small>PERFECT</small><span>${perfect} Hari</span></div>
+        `;
+        updateVisuals();
+    }
+
+    function render(){
+        const days = getDaysInMonth(monthSelect.value, yearSelect.value);
+        tableHead.innerHTML = `<tr><th class="activity-name-cell">Kegiatan</th>${Array.from({length:days}, (_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
+        tableBody.innerHTML = '';
+        activities.forEach((a, ai) => {
+            const done = a.checks.filter(v=>v).length;
+            const percent = Math.round((done/days)*100);
+            const color = percent < 30 ? 'var(--danger)' : (percent < 70 ? 'var(--warning)' : 'var(--success)');
+            const tr = document.createElement('tr');
+            let rowHtml = `
+                <td class="activity-name-cell">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <strong onclick="editActivityName(${ai})">${a.name}</strong>
+                        <span onclick="removeActivity(${ai})" style="color:var(--danger); font-size:12px; cursor:pointer;">✕</span>
+                    </div>
+                    <div class="mini-progress"><div class="mini-progress-fill" style="width:${percent}%; background:${color}"></div></div>
+                </td>`;
+            for(let d=0; d<days; d++) rowHtml += `<td><input type="checkbox" ${a.checks[d]?'checked':''} onchange="toggleCheck(${ai}, ${d})"></td>`;
+            tr.innerHTML = rowHtml;
+            tableBody.appendChild(tr);
+        });
+        evaluate();
+    }
+
+    loadData();
+</script>
+</body>
+</html>

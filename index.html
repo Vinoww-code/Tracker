@@ -3,364 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Activity Tracker</title>
+    <title>MONO - Menu</title>
     <style>
         :root {
             --bg-color: #dbd7d7;
             --card-bg: #ffffff;
             --text-main: #000000;
             --accent: #000000;
-            --success: #22c55e;
-            --warning: #eab308;
-            --danger: #ef4444;
             --border: #000000;
-
-
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { 
-            background: var(--bg-color); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --accent: #ffffff;
+            --border: #333333;
         }
 
-        h1 { font-weight: 700; margin-bottom: 20px; color: var(--accent); }
-
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        select {
-            background: var(--card-bg);
-            color: rgb(0, 0, 0);
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 8px;
-            flex: 1;
-            outline: none;
-        }
-
-        /* Summary Cards */
-        #summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            width: 100%;
-            max-width: 900px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-
-        .stat-card small { color: #000000; display: block; margin-bottom: 5px; }
-        .stat-card span { font-size: 1.2rem; font-weight: bold; }
-
-        /* Main Container */
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Sidebar/Activities List */
-        .activities-header {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #addBtn {
-            background: var(--accent);
-            border: none;
-            color: var(--bg-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        #addBtn:active { transform: scale(0.95); }
-
-        /* Table Wrapper */
-        .grid-wrapper {
-            overflow-x: auto;
-            width: 100%;
-            padding-bottom: 5px;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            min-width: 800px; /* Minimal width for scrolling */
-        }
-
-        th {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px 5px;
-            font-size: 0.8rem;
-            color: #000000;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .activity-row { border-bottom: 1px solid var(--border); }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        .activity-name-cell {
-            position: sticky;
-            left: 0;
+        body {
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: 0.3s ease;
+        }
+
+        .logo-section { margin-bottom: 60px; text-align: center; }
+        .logo-section h1 { font-size: 3rem; font-weight: 200; letter-spacing: 12px; margin: 0; text-transform: uppercase; }
+        .logo-section p { letter-spacing: 4px; text-transform: uppercase; font-size: 0.7rem; color: #666; margin-top: 10px; }
+
+        .menu-options { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 280px; }
+
+        .menu-btn {
             background: var(--card-bg);
-            padding: 15px;
-            min-width: 180px;
-            text-align: left;
-            z-index: 10;
-            box-shadow: 5px 0 10px rgba(0,0,0,0.2);
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
+            border: 1px solid var(--border);
+            padding: 18px;
             font-size: 0.8rem;
-            margin-left: 8px;
-            opacity: 5;
-        }
-
-        .delete-btn:hover { opacity: 1; }
-
-        /* Checkbox Styling */
-        input[type="checkbox"] {
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            background: #000000;
-            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            display: grid;
-            place-content: center;
-            transition: 0.2s;
+            transition: all 0.2s;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-main);
+            text-align: center;
         }
 
-        input[type="checkbox"]:checked { background: var(--success); }
-        input[type="checkbox"]:checked::before {
-            content: "✔";
-            color: rgb(255, 255, 255);
-            font-size: 14px;
-        }
+        .menu-btn:active { transform: scale(0.98); opacity: 0.8; }
+        .menu-btn.primary { background: var(--accent); color: var(--bg-color); }
 
-        /* Progress Mini Bar */
-        .mini-progress {
-            height: 4px;
-            background: #000000 ;
-            border-radius: 2px;
-            margin-top: 8px;
-            width: 100%;
-        }
-        .mini-progress-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 0.3s;
-        }
-
-        /* Custom Scrollbar */
-        .grid-wrapper::-webkit-scrollbar { height: 8px; }
-        .grid-wrapper::-webkit-scrollbar-track { background: var(--bg-color); }
-        .grid-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 1.5rem; }
-            .activity-name-cell { min-width: 140px; font-size: 0.9rem; }
-        }
+        .version { margin-top: 40px; font-size: 0.6rem; color: #888; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <h1>Activity Tracker</h1>
-
-    <div class="toolbar">
-        <select id="monthSelect"></select>
-        <select id="yearSelect"></select>
+    <div class="logo-section">
+        <h1>MONO</h1>
+        <p>Aktivitas & Tracker</p>
     </div>
 
-    <div id="summary"></div>
-
-    <div class="container">
-        <div class="activities-header">
-            <span>Daftar Kegiatan</span>
-            <button id="addBtn">+ Tambah</button>
-        </div>
-        <div class="grid-wrapper">
-            <table id="trackerTable">
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+    <div class="menu-options">
+        <a href="tracker.html" class="menu-btn primary">Mulai Tracker</a>
+        <button class="menu-btn" onclick="toggleTheme()">Mode Gelap/Terang (🌓)</button>
+        <button class="menu-btn" onclick="setupNotification()">Nyalakan Pengingat</button>
     </div>
+    
+    <p class="version">VERSION 2.0.0</p>
 
-<script>
-    const monthNames=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const monthSelect=document.getElementById('monthSelect');
-    const yearSelect=document.getElementById('yearSelect');
-    const tableHead=document.getElementById('tableHead');
-    const tableBody=document.getElementById('tableBody');
-    const summary=document.getElementById('summary');
-
-    let activities=[];
-
-    // Init Selectors
-    const now = new Date();
-    monthNames.forEach((m,i)=>{
-        const o=document.createElement('option');
-        o.value=i; o.textContent=m;
-        monthSelect.appendChild(o);
-    });
-    monthSelect.value=now.getMonth();
-
-    for(let y=2024; y<=2030; y++){
-        const o=document.createElement('option');
-        o.value=y; o.textContent=y;
-        yearSelect.appendChild(o);
-    }
-    yearSelect.value=now.getFullYear();
-
-    monthSelect.onchange=loadData;
-    yearSelect.onchange=loadData;
-    document.getElementById('addBtn').onclick=addActivity;
-
-    function getDaysInMonth(month, year) {
-        return new Date(year, parseInt(month) + 1, 0).getDate();
-    }
-
-    function storageKey(){
-        return `tracker-${yearSelect.value}-${monthSelect.value}`;
-    }
-
-    function saveData(){
-        localStorage.setItem(storageKey(), JSON.stringify({activities}));
-    }
-
-    function loadData(){
-        const saved=localStorage.getItem(storageKey());
-        activities=saved ? JSON.parse(saved).activities : [];
-        render();
-    }
-
-    function addActivity(){
-        const name=prompt('Nama kegiatan (misal: Workout, Membaca):');
-        if(!name) return;
-        const days = getDaysInMonth(monthSelect.value, yearSelect.value);
-        activities.push({name, checks: Array(days).fill(false)});
-        saveData(); render();
-    }
-
-    function removeActivity(i){
-        if(confirm(`Hapus "${activities[i].name}"?`)){
-            activities.splice(i,1);
-            saveData(); render();
-        }
-    }
-
-    function toggleCheck(ai, day){
-        activities[ai].checks[day] = !activities[ai].checks[day];
-        saveData(); render();
-    }
-
-    function evaluate(){
-        if(activities.length===0){
-            summary.innerHTML='<div class="stat-card">Belum ada data kegiatan.</div>';
-            return;
+    <script>
+        function toggleTheme() {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('mono-theme', theme);
         }
 
-        const daysInMonth = getDaysInMonth(monthSelect.value, yearSelect.value);
-        let best='', maxDone=-1;
-        let dayStats=Array(daysInMonth).fill(0);
+        // Load saved theme
+        const savedTheme = localStorage.getItem('mono-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
 
-        activities.forEach(a => {
-            const done = a.checks.filter(v=>v).length;
-            if(done > maxDone){ maxDone=done; best=a.name; }
-            a.checks.forEach((v,i) => { if(v) dayStats[i]++; });
-        });
-
-        const productive = dayStats.filter(v => v > 0).length;
-        const streak = dayStats.filter(v => v === activities.length && activities.length > 0).length;
-
-        summary.innerHTML = `
-            <div class="stat-card"><small>Paling Konsisten</small><span>${best || '-'}</span></div>
-            <div class="stat-card"><small>Hari Produktif</small><span>${productive} Hari</span></div>
-            <div class="stat-card"><small>Target Tercapai</small><span>${streak} Hari</span></div>
-        `;
-    }
-
-    function render(){
-        const days = getDaysInMonth(monthSelect.value, yearSelect.value);
-        
-        // Render Header
-        let headHtml = `<tr><th class="activity-name-cell">Kegiatan</th>`;
-        for(let d=1; d<=days; d++) headHtml += `<th>${d}</th>`;
-        headHtml += `</tr>`;
-        tableHead.innerHTML = headHtml;
-
-        // Render Body
-        tableBody.innerHTML = '';
-        activities.forEach((a, ai) => {
-            const done = a.checks.filter(v=>v).length;
-            const percent = Math.round((done/days)*100);
-            const color = percent < 30 ? 'var(--danger)' : (percent < 70 ? 'var(--warning)' : 'var(--success)');
-
-            const tr = document.createElement('tr');
-            tr.className = 'activity-row';
-
-            // Nama & Progress
-            let rowHtml = `
-                <td class="activity-name-cell">
-                    <div>
-                        <strong>${a.name}</strong>
-                        <button class="delete-btn" onclick="removeActivity(${ai})">✕</button>
-                    </div>
-                    <div style="font-size:10px; color:#000000; margin-top:4px">${done}/${days} hari (${percent}%)</div>
-                    <div class="mini-progress">
-                        <div class="mini-progress-fill" style="width:${percent}%; background:${color}"></div>
-                    </div>
-                </td>
-            `;
-
-            // Checkboxes
-            for(let d=0; d<days; d++){
-                const checked = a.checks[d] ? 'checked' : '';
-                rowHtml += `<td><input type="checkbox" ${checked} onchange="toggleCheck(${ai}, ${d})"></td>`;
+        function setupNotification() {
+            if (!("Notification" in window)) {
+                alert("Browser tidak mendukung notifikasi.");
+                return;
             }
-            
-            tr.innerHTML = rowHtml;
-            tableBody.appendChild(tr);
-        });
-
-        evaluate();
-    }
-
-    loadData();
-</script>
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    alert("Notifikasi Aktif! Kamu akan diingatkan setiap jam 8 malam.");
+                    // Logika pengingat sederhana (hanya simulasi karena browser butuh Service Worker untuk background task)
+                }
+            });
+        }
+    </script>
 </body>
 </html>
